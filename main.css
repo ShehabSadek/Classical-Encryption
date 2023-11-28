@@ -1,0 +1,15 @@
+QPushButton#encrypt {
+    background-color: lightblue;
+    color: darkblue;
+    border: 1px solid darkblue;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+QPushButton#encrypt:hover {
+    background-color: lightcyan;
+    border-color: darkcyan;
+}
+QLabel{
+    background-color: lightcyan;
+    font-size: 20px;
+}
