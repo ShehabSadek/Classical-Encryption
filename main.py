@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5.QtWidgets import (
     QApplication, QDesktopWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
     QWidget, QFileDialog, QTextEdit
@@ -112,11 +113,17 @@ class MainWindow(QWidget):
         self.setup_ui()
 
     def setup_ui(self):
-        self.setWindowIcon(QtGui.QIcon("./assets/logo.png"))
+        if getattr(sys, 'frozen', False):
+            script_directory = sys._MEIPASS
+        else:
+            script_directory = os.path.dirname(os.path.abspath(__file__))
+        img_dir = os.path.join(script_directory, 'assets', 'cyber.jpg')
+        pixmap = QPixmap(img_dir)
+
+        self.setWindowIcon(QtGui.QIcon(os.path.join(script_directory, 'assets', 'logo.png')))
         self.setup_window_geometry()
 
         background_label = QLabel(self)
-        pixmap = QPixmap("./assets/cyber.jpg")
         background_label.setPixmap(pixmap)
         background_label.resize(self.size())
         background_label.lower()
@@ -140,8 +147,12 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    css = "./main.css"
-    with open(css, "r") as style_file:
+    if getattr(sys, 'frozen', False):
+        script_directory = sys._MEIPASS
+    else:
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+    css_path = os.path.join(script_directory, 'assets', 'main.css')
+    with open(css_path, "r") as style_file:
         app.setStyleSheet(style_file.read())
     window = MainWindow()
     window.show()
