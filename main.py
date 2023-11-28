@@ -2,10 +2,10 @@ import sys
 import os
 from PyQt5.QtWidgets import (
     QApplication, QDesktopWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
-    QWidget, QFileDialog, QTextEdit
+    QWidget, QTextEdit
 )
-from PyQt5.QtGui import QPixmap, QCursor
-from PyQt5 import QtGui, QtCore
+from PyQt5.QtGui import QPixmap, QCursor, QIcon
+from PyQt5 import QtCore
 from network_sec import *
 
 def create_button(encryption):
@@ -120,7 +120,7 @@ class MainWindow(QWidget):
         img_dir = os.path.join(script_directory, 'assets', 'cyber.jpg')
         pixmap = QPixmap(img_dir)
 
-        self.setWindowIcon(QtGui.QIcon(os.path.join(script_directory, 'assets', 'logo.png')))
+        self.setWindowIcon(QIcon(os.path.join(script_directory, 'assets', 'logo.png')))
         self.setup_window_geometry()
 
         background_label = QLabel(self)
