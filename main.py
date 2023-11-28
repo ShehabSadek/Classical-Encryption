@@ -2,16 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication,QDesktopWidget,QHBoxLayout, QLabel, QPushButton, QVBoxLayout , QWidget,QFileDialog,QTextEdit
 from PyQt5.QtGui import QPixmap, QCursor
 from PyQt5 import QtGui, QtCore
-
-widgets = {"logo":[],
-            "button":[],
-            "score":[],
-            "quest":[],
-            "type1":[],
-            "type2":[],
-            "type3":[],
-            "type4":[]
-           }
+from network_sec import *
 
 class UpperPart(QWidget):
     def __init__(self, parent=None):
@@ -33,9 +24,18 @@ class UpperPart(QWidget):
 
         self.setLayout(labels_layout)
 
-    def update_text(self, new_text):
-        self.label.setText(new_text)
-
+class SplitButton(QWidget):
+    def __init__(self, main_text, secondary_text, parent=None):
+        super(SplitButton, self).__init__(parent)
+        
+        self.main_button = create_button(main_text)
+        self.secondary_button = create_button(secondary_text)
+        
+        layout = QVBoxLayout()
+        layout.addWidget(self.main_button)
+        layout.addWidget(self.secondary_button)
+        
+        self.setLayout(layout)
 class LowerPart(QWidget):
     def __init__(self, upper_part, parent=None):
         super(LowerPart, self).__init__(parent)
@@ -45,15 +45,48 @@ class LowerPart(QWidget):
         for i in ["Ceaser","Playfair","Hill","Vigenere","Vernam"]:
             button = create_button(i)
             button.clicked.connect(self.on_button_clicked)
+
+            if i == "Vigenere":
+                button=SplitButton("Vigenere-Repeat", "Vigenere-Auto")
+                button.main_button.clicked.connect(self.on_button_clicked)
+                button.secondary_button.clicked.connect(self.on_button_clicked)
             layout.addWidget(button)
+
 
         self.setLayout(layout)
 
     def on_button_clicked(self):
         sender_button = self.sender()
-        new_text = f"Button {sender_button.text()} was pressed!"
-        self.upper_part.update_text(new_text)
+        # self.upper_part.findChild(QTextEdit,"Key").setText(sender_button.text())
+        tag = sender_button.text()
+        text=self.upper_part.findChild(QTextEdit,"Plain Text").toPlainText()
+        key_text = self.upper_part.findChild(QTextEdit, "Key").toPlainText()
+        if not text or not key_text:
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText("Both Plain Text and Key must be provided.")
+            return
+        if tag=="Ceaser":
+            try:
+                key = int(key_text)
+            except ValueError:
+                key = None
+            if key is not None:
+                self.upper_part.findChild(QTextEdit,"Cipher Text").setText(ceaser(text,int(key)))
+            else:
+                self.upper_part.findChild(QTextEdit,"Cipher Text").setText("Enter a valid shift number!")
+        if tag=="Playfair":
+            self.upper_part.findChild(QTextEdit,"Cipher Text").setText(playfair(key_text,text))
+
+        if tag=="Hill":
+            self.upper_part.findChild(QTextEdit,"Cipher Text").setText(hill(text))
+            self.upper_part.findChild(QTextEdit,"Key").setText("Key matrix is predefined.")
+
+        if tag=="Vigenere-Repeat":
+            self.upper_part.findChild(QTextEdit,"Cipher Text").setText(vigenere(key_text,text,False))
+        if tag=="Vigenere-Auto":
+            self.upper_part.findChild(QTextEdit,"Cipher Text").setText(vigenere(key_text,text,True))
         
+        if tag=="Vernam":
+            self.upper_part.findChild(QTextEdit,"Cipher Text").setText(vernam(key_text,text))
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -99,21 +132,6 @@ def create_textArea(name):
     text_edit.setObjectName(name)
     return text_edit
 
-def main_frame():
-    logo = QPixmap("logo.png")
-    logo_label= QLabel()
-    logo_label.setPixmap(logo)
-    logo_label.setAlignment(QtCore.Qt.AlignCenter)
-    widgets["logo"].append(logo_label)
-    # logo_label.setStyleSheet("margin-top: 900px;")
-
-    test_button = QPushButton("Test")
-    test_button.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-    test_button.setStyleSheet("*{border: 4px solid '#BC006C'; border-radius: 45px; font-size: 35px; color: 'white' ; padding: 25px 0;} *:hover{background:'#BC006C';}")
-    widgets["button"].append(test_button)
-
-    #grid.addWidget(widgets["logo"][-1],0,0)
-    #grid.addWidget(widgets["button"][-1],1,0)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     css="./main.css"

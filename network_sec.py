@@ -35,9 +35,11 @@ def playfair(key,text,i_j = 'i'):
     text=text.replace("i",i_j)
     text=text.replace("j",i_j)
     matrix=create_playfair_matrix(key,i_j)
-    pairs = [(text[i], text[i + 1] if i + 1 < len(text) and text[i] != text[i + 1] else 'x') for i in range(0, len(text), 2)]
-    results = []
+    new_string = ''.join([char + 'x' if i < len(text) - 1 and char == text[i + 1] and i % 2 == 0 else char for i, char in enumerate(text)])
 
+    pairs = [(new_string[i], new_string[i + 1] if i + 1 < len(new_string) else 'x') for i in range(0, len(new_string), 2)]
+
+    results = []
     for pair in pairs:
         char1, char2 = pair
         index1 = find_index(matrix, char1)
@@ -72,9 +74,25 @@ def hill(text):
     matrix = np.array([[2, 4, 12],
                    [9, 1, 6],
                    [7, 5, 3]])
+    text=text_preprocess(text)
+    triplets = []
 
-    pairs = [(text[i] +(text[i + 1] if i + 1 < len(text) and text[i] != text[i + 1] else 'x') + ( text[i + 2] if i + 2 < len(text) and text[i+1] != text[i + 2] else 'x')) for i in range(0, len(text), 3)]
-    for pair in pairs:
+    i = 0
+    while i < len(text):
+        # Create a triplet
+        if i + 2 < len(text):
+            triplet = (text[i], text[i + 1], text[i + 2])
+        else:
+            triplet = (text[i], 'x', 'x')
+
+        if triplet[1] == triplet[2]:
+            triplet = (triplet[0], triplet[1] , 'x')
+            i += 2 
+        else:
+            i += 3
+
+        triplets.append(triplet)
+    for pair in triplets:
         matrix_pair=np.array([[letter_to_index(pair[0]),letter_to_index(pair[1]),letter_to_index(pair[2])]])
         enc=np.dot(matrix_pair,matrix)%26
         for i in enc:
@@ -114,11 +132,9 @@ def vernam(key,text):
         k = letter_to_index(key[i % len(key)])
         cipher+=index_to_letter((index^k)%26)
     return cipher
-print("ceaser: ",ceaser("Hello world",3))
-print("playfair: ",playfair("archangel","hello world this is a test sentence j zk"))
-print("hill: ",hill("frid"))
-print("vigenere-repeat: ",vigenere("pie","Hello world"))
-print("vigenere-auto: ",vigenere("aether","Hello world",True))
-print("vernam: ",vernam("SPARTANS","abcdruas"))
-
-# SPARTANS
+# print("ceaser: ",ceaser("Hello world",3))
+# print("playfair: ",playfair("archangel","balloon worldt"))
+# print("hill: ",hill("balloon world"))
+# print("vigenere-repeat: ",vigenere("pie","Hello world"))
+# print("vigenere-auto: ",vigenere("aether","Hello world",True))
+# print("vernam: ",vernam("SPARTANS","abcdruas"))
