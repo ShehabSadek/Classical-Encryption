@@ -8,22 +8,27 @@ from PyQt5.QtGui import QPixmap, QCursor, QIcon
 from PyQt5 import QtCore
 from network_sec import *
 
+
 def create_button(encryption):
     button = QPushButton(encryption)
     button.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
     button.setFixedHeight(90)
+    button.setStyleSheet("font-family: 'Times New Roman'; font-size: 32;")
     button.setObjectName("encrypt")
     return button
 
 def create_label(text):
     label = QLabel(text)
+    label.setStyleSheet("color: white; font-family: 'Times New Roman'; font-size: 32;")  
     return label
 
 def create_text_area(name):
     text_edit = QTextEdit()
-    text_edit.setFontPointSize(30)
+    text_edit.setFontPointSize(22)  
+    text_edit.setStyleSheet("color: white; font-family: 'Times New Roman';")  
     text_edit.setObjectName(name)
     return text_edit
+
 
 class UpperPart(QWidget):
     def __init__(self, parent=None):
@@ -51,7 +56,7 @@ class SplitButton(QWidget):
         super(SplitButton, self).__init__(parent)
         self.main_button = create_button(main_text)
         self.secondary_button = create_button(secondary_text)
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()  # Change to QHBoxLayout
         layout.addWidget(self.main_button)
         layout.addWidget(self.secondary_button)
         self.setLayout(layout)
@@ -63,17 +68,19 @@ class LowerPart(QWidget):
         self.setup_layout()
 
     def setup_layout(self):
-        layout = QHBoxLayout()
+        layout = QHBoxLayout()  # Change to QHBoxLayout
         encryption_types = ["Ceaser", "Playfair", "Hill", "Vigenere", "Vernam"]
         for encryption in encryption_types:
-            button = create_button(encryption)
-            button.clicked.connect(self.on_button_clicked)
-
             if encryption == "Vigenere":
-                button = SplitButton("Vigenere-Repeat", "Vigenere-Auto")
-                button.main_button.clicked.connect(self.on_button_clicked)
-                button.secondary_button.clicked.connect(self.on_button_clicked)
-            layout.addWidget(button)
+                split_button = SplitButton("Vigenere-Repeat", "Vigenere-Auto")
+                split_button.main_button.clicked.connect(self.on_button_clicked)
+                split_button.secondary_button.clicked.connect(self.on_button_clicked)
+                layout.addWidget(split_button)
+            else:
+                button = create_button(encryption)
+                button.clicked.connect(self.on_button_clicked)
+                layout.addWidget(button)
+
         self.setLayout(layout)
 
     def on_button_clicked(self):
@@ -82,30 +89,50 @@ class LowerPart(QWidget):
         text = self.upper_part.findChild(QTextEdit, "Plain Text").toPlainText()
         key_text = self.upper_part.findChild(QTextEdit, "Key").toPlainText()
 
+        try:
+            with open('plain_text.txt', 'a') as plain_text_file:
+                plain_text_file.write(text + '\n')
+        except Exception as e:
+            print(f"Error writing to plain_text.txt: {e}")
+
         if not text or not key_text:
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText("Both Plain Text and Key must be provided.")
+            result = "Both Plain Text and Key must be provided."
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
+            write_to_file(result)
             return
 
+        result = ""
         if tag == "Ceaser":
             try:
                 key = int(key_text)
             except ValueError:
                 key = None
             if key is not None:
-                self.upper_part.findChild(QTextEdit, "Cipher Text").setText(ceaser(text, int(key)))
-            else:
-                self.upper_part.findChild(QTextEdit, "Cipher Text").setText("Enter a valid shift number.")
+                result = ceaser(text, int(key))
+                self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
         elif tag == "Playfair":
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(playfair(key_text, text))
+            result = playfair(key_text, text)
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
         elif tag == "Hill":
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(hill(text))
-            self.upper_part.findChild(QTextEdit, "Key").setText("Key matrix is predefined.")
+            result = hill(text)
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
         elif tag == "Vigenere-Repeat":
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(vigenere(key_text, text, False))
+            result = vigenere(key_text, text, False)
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
         elif tag == "Vigenere-Auto":
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(vigenere(key_text, text, True))
+            result = vigenere(key_text, text, True)
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
         elif tag == "Vernam":
-            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(vernam(key_text, text))
+            result = vernam(key_text, text)
+            self.upper_part.findChild(QTextEdit, "Cipher Text").setText(result)
+
+        try:
+            with open('encryption_results.txt', 'a') as file:
+                file.write(result + '\n')
+        except Exception as e:
+            print(f"Error writing to encryption_results.txt: {e}")
+
+
 
 class MainWindow(QWidget):
     def __init__(self):
