@@ -69,35 +69,61 @@ def find_index(matrix, char):
         if char in row:
             return i, row.index(char)
 
-def hill(text):
+def hill(text,key=2):
     cipher=""
-    matrix = np.array([[2, 4, 12],
-                   [9, 1, 6],
-                   [7, 5, 3]])
-    text=text_preprocess(text)
-    triplets = []
+    if key == 1:
+        matrix = np.array([[5, 17],
+                        [8, 3],])
+        text=text_preprocess(text)
+        tuples = []
 
-    i = 0
-    while i < len(text):
-        # Create a triplet
-        if i + 2 < len(text):
-            triplet = (text[i], text[i + 1], text[i + 2])
-        else:
-            triplet = (text[i], 'x', 'x')
+        i = 0
+        while i < len(text):
+            if i + 1 < len(text):
+                tup = (text[i], text[i+1])
+            else :
+                tup = (text[i],'x')
+            if tup[0] == tup[1]:
+                tup = (tup[0], 'x')
+                i += 1
+            else:
+                i += 2
+            tuples.append(tup)
+        for pair in tuples:
+            matrix_pair=np.array([[letter_to_index(pair[0]),letter_to_index(pair[1])]])
+            enc=np.dot(matrix_pair,matrix)%26
+            for i in enc:
+                for j in i:
+                    cipher+=(index_to_letter(j))
 
-        if triplet[1] == triplet[2]:
-            triplet = (triplet[0], triplet[1] , 'x')
-            i += 2 
-        else:
-            i += 3
+    if key==2:
+        matrix = np.array([[2, 4, 12],
+                    [9, 1, 6],
+                    [7, 5, 3]])
+        text=text_preprocess(text)
+        triplets = []
 
-        triplets.append(triplet)
-    for pair in triplets:
-        matrix_pair=np.array([[letter_to_index(pair[0]),letter_to_index(pair[1]),letter_to_index(pair[2])]])
-        enc=np.dot(matrix_pair,matrix)%26
-        for i in enc:
-            for j in i:
-                cipher+=(index_to_letter(j))
+        i = 0
+        while i < len(text):
+            if i + 2 < len(text):
+                triplet = (text[i], text[i + 1], text[i + 2])
+            else:
+                triplet = (text[i], 'x', 'x')
+
+            if triplet[1] == triplet[2]:
+                triplet = (triplet[0], triplet[1] , 'x')
+                i += 2 
+            else:
+                i += 3
+
+            triplets.append(triplet)
+        for pair in triplets:
+            matrix_pair=np.array([[letter_to_index(pair[0]),letter_to_index(pair[1]),letter_to_index(pair[2])]])
+            enc=np.dot(matrix_pair,matrix)%26
+            for i in enc:
+                for j in i:
+                    cipher+=(index_to_letter(j))
+
     return cipher
 def letter_to_index(letter):
     letter = letter.upper()
@@ -138,3 +164,6 @@ def vernam(key,text):
 # print("vigenere-repeat: ",vigenere("pie","Hello world"))
 # print("vigenere-auto: ",vigenere("aether","Hello world",True))
 # print("vernam: ",vernam("SPARTANS","abcdruas"))
+
+
+# print("hill: ",hill("balloon world",key=1))
